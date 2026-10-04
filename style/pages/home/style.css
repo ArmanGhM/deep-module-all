@@ -1,0 +1,330 @@
+/* ═══════════════════════════════════════════════════
+   Carousel — کاروسل افقی
+   ═══════════════════════════════════════════════════ */
+
+.carousel-section {
+  padding-block: var(--s-7);
+}
+
+.carousel-section__head {
+  max-width: var(--container);
+  margin-inline: auto;
+  padding-inline: var(--s-4);
+  margin-bottom: var(--s-4);
+}
+
+.carousel {
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  padding-block: var(--s-2) var(--s-5);
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.carousel__track {
+  display: flex;
+  gap: var(--s-4);
+  width: max-content;
+  padding-inline: max(
+    var(--s-4),
+    calc((100vw - var(--container)) / 2 + var(--s-4))
+  );
+}
+
+.carousel::-webkit-scrollbar {
+  height: 6px;
+}
+
+.carousel::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.carousel::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: var(--r-full);
+  transition: background var(--t-fast);
+}
+
+.carousel::-webkit-scrollbar-thumb:hover {
+  background: var(--green-300);
+} /* ═══════════════════════════════════════════════════
+   Product Card — کارت محصول
+   ═══════════════════════════════════════════════════ */
+
+.product-card {
+  position: relative;
+  flex: 0 0 220px;
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  padding: var(--s-4);
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-xs);
+  transition:
+    transform var(--t-base),
+    box-shadow var(--t-base),
+    border-color var(--t-base);
+}
+
+.product-card:hover,
+.product-card:focus-within {
+  transform: translateY(-8px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--green-200);
+}
+
+.product-card__media {
+  display: grid;
+  place-items: center;
+  height: 150px;
+  padding: var(--s-3);
+  background: linear-gradient(
+    135deg,
+    var(--surface-alt) 0%,
+    var(--green-100) 100%
+  );
+  border-radius: var(--r-sm);
+  overflow: hidden;
+}
+
+.product-card__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transition: transform var(--t-slow);
+}
+
+.product-card:hover .product-card__media img {
+  transform: scale(1.1) rotate(-3deg);
+}
+
+.product-card__title {
+  font-size: 0.94rem;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.4;
+  margin-top: var(--s-1);
+}
+
+.product-card__meta {
+  font-size: 0.78rem;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+.product-card__footer {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--s-2);
+  margin-top: auto;
+  padding-top: var(--s-2);
+  border-top: 1px dashed var(--border-soft);
+}
+
+.product-card__price {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.product-card__price del {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-decoration: line-through;
+}
+
+.product-card__price ins {
+  text-decoration: none;
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+
+/* ─── دکمه افزودن ─── */
+.btn-add {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--green-500), var(--green-700));
+  color: #fff;
+  font-size: 1.5rem;
+  font-weight: 300;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  box-shadow: var(--shadow-primary);
+  transition:
+    transform var(--t-fast),
+    box-shadow var(--t-fast),
+    background var(--t-fast);
+}
+
+.btn-add:hover {
+  transform: scale(1.12) rotate(90deg);
+  box-shadow: var(--shadow-primary-hover);
+}
+
+.btn-add:active {
+  transform: scale(0.95);
+}
+
+.btn-add:disabled {
+  background: var(--border);
+  color: var(--text-muted);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* ─── ناموجود ─── */
+.product-card--unavailable {
+  opacity: 0.55;
+  filter: grayscale(0.5);
+}
+
+.product-card--unavailable:hover {
+  transform: none;
+  box-shadow: var(--shadow-xs);
+  border-color: var(--border-soft);
+}
+/* ═══════════════════════════════════════════════════
+   Badge — نشان تخفیف / وضعیت
+   ═══════════════════════════════════════════════════ */
+
+.badge {
+  position: absolute;
+  top: var(--s-3);
+  left: var(--s-3);
+  padding: 4px 12px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.4;
+  color: #fff;
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  border-radius: var(--r-full);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35);
+  z-index: 2;
+  animation: badge-pop var(--t-slow) both;
+}
+
+@keyframes badge-pop {
+  0%   { transform: scale(0); opacity: 0; }
+  70%  { transform: scale(1.1); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.badge--danger {
+  background: linear-gradient(135deg, #6b7280, #4b5563);
+  box-shadow: 0 4px 12px rgba(75, 85, 99, 0.3);
+}/* ═══════════════════════════════════════════════════
+   Banners — بنرهای تبلیغاتی
+   ═══════════════════════════════════════════════════ */
+
+.banners { padding-block: var(--s-7); }
+
+.banners__wrapper {
+  max-width: var(--container);
+  margin-inline: auto;
+  padding-inline: var(--s-4);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--s-4);
+}
+
+.banner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+  padding: var(--s-5);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  transition: transform var(--t-base), box-shadow var(--t-base);
+}
+
+.banner::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent 60%);
+  pointer-events: none;
+}
+
+.banner:hover,
+.banner:focus-visible {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+}
+
+.banner--bakery {
+  background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+  color: #b45309;
+  border: 1px solid #ffd699;
+}
+
+.banner--breakfast {
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+  color: var(--green-800);
+  border: 1px solid var(--green-200);
+}
+
+.banner__icon {
+  flex-shrink: 0;
+  width: 80px;
+  height: 80px;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: var(--r-md);
+  backdrop-filter: blur(8px);
+}
+
+.banner__icon img {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+  transition: transform var(--t-slow);
+}
+
+.banner:hover .banner__icon img {
+  transform: scale(1.12) rotate(-6deg);
+}
+
+.banner__content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.banner__content strong {
+  font-size: 1.02rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.banner__content small {
+  font-size: 0.82rem;
+  opacity: 0.85;
+}
+
+.banner__arrow {
+  flex-shrink: 0;
+  font-size: 1.5rem;
+  opacity: 0.7;
+  transition: transform var(--t-base), opacity var(--t-base);
+}
+
+.banner:hover .banner__arrow {
+  transform: translateX(-8px);
+  opacity: 1;
+}

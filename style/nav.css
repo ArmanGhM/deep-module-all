@@ -1,0 +1,268 @@
+/* ═══════════════════════════════════════════════════
+   Nav — منوی اصلی + مگا منو
+   ═══════════════════════════════════════════════════ */
+
+.main-nav {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.nav__wrapper {
+  max-width: var(--container);
+  margin-inline: auto;
+  padding-inline: var(--s-4);
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+  min-height: 52px;
+}
+
+/* ─── لینک‌های ساده ─── */
+.nav__links {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-wrap: wrap;
+}
+
+.nav__links a {
+  position: relative;
+  display: inline-block;
+  padding: 8px 14px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-soft);
+  border-radius: var(--r-sm);
+  transition:
+    color var(--t-fast),
+    background var(--t-fast);
+}
+
+.nav__links a::after {
+  content: "";
+  position: absolute;
+  inset-inline: 14px;
+  bottom: 4px;
+  height: 2px;
+  border-radius: var(--r-full);
+  background: var(--primary);
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform var(--t-base);
+}
+
+.nav__links a:hover {
+  color: var(--primary-dark);
+  background: var(--primary-soft);
+}
+
+.nav__links a:hover::after {
+  transform: scaleX(1);
+}
+
+/* ─── مگا منو ─── */
+.mega {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.mega__trigger {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  padding: 10px 16px;
+  border-radius: var(--r-sm);
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--text);
+  transition:
+    background var(--t-fast),
+    color var(--t-fast);
+  cursor: pointer;
+}
+
+.mega__trigger:hover,
+.mega:focus-within .mega__trigger {
+  background: linear-gradient(135deg, var(--green-600), var(--green-700));
+  color: #fff;
+  box-shadow: var(--shadow-primary);
+}
+
+.mega__icon {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  transition: transform var(--t-base);
+}
+
+.mega:hover .mega__icon,
+.mega:focus-within .mega__icon {
+  transform: rotate(90deg);
+}
+
+.mega__icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.mega__menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 300px;
+  padding: var(--s-2);
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-lg);
+  z-index: 200;
+
+  visibility: hidden;
+  opacity: 0;
+  transform: translateY(-12px) scale(0.98);
+  transform-origin: top right;
+  pointer-events: none;
+
+  transition:
+    opacity var(--t-base),
+    transform var(--t-base),
+    visibility var(--t-base);
+}
+
+.mega:hover .mega__menu,
+.mega:focus-within .mega__menu {
+  visibility: visible;
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.mega__list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2px;
+}
+
+.mega__list a {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  padding: 11px 14px;
+  border-radius: var(--r-sm);
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: var(--text-soft);
+  transition:
+    background var(--t-fast),
+    color var(--t-fast),
+    padding-inline-start var(--t-fast);
+}
+
+.mega__list a span:first-child {
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.mega__list a:hover,
+.mega__list a:focus-visible {
+  background: var(--primary-soft);
+  color: var(--primary-dark);
+  padding-inline-start: 20px;
+}
+/* ═══════════════════════════════════════════════════
+   Categories — دسته‌بندی‌ها
+   ═══════════════════════════════════════════════════ */
+
+.categories {
+  padding-block: var(--s-8);
+}
+
+.categories__wrapper {
+  max-width: var(--container);
+  margin-inline: auto;
+  padding-inline: var(--s-4);
+}
+
+.categories__grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: var(--s-3);
+}
+
+.category-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-5) var(--s-3);
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--r-lg);
+  text-align: center;
+  box-shadow: var(--shadow-xs);
+  transition:
+    transform var(--t-base),
+    box-shadow var(--t-base),
+    border-color var(--t-base);
+  position: relative;
+  overflow: hidden;
+}
+
+.category-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, transparent 50%, var(--primary-soft));
+  opacity: 0;
+  transition: opacity var(--t-base);
+}
+
+.category-card:hover,
+.category-card:focus-visible {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--green-200);
+}
+
+.category-card:hover::before {
+  opacity: 0.5;
+}
+
+.category-card__icon {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 80px;
+  height: 80px;
+  background: var(--surface-alt);
+  border-radius: 50%;
+  transition:
+    transform var(--t-base),
+    background var(--t-base);
+}
+
+.category-card:hover .category-card__icon {
+  transform: scale(1.1) rotate(-4deg);
+  background: var(--green-100);
+}
+
+.category-card__icon img {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  transition: transform var(--t-base);
+}
+
+.category-card:hover .category-card__icon img {
+  transform: scale(1.05);
+}
+
+.category-card__title {
+  position: relative;
+  z-index: 1;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+}
