@@ -1,11 +1,10 @@
 /* ═══════════════════════════════════════════════════
-   Base — پایه تایپوگرافی و فوکوس
+   Base — تایپوگرافی و پایه
    ═══════════════════════════════════════════════════ */
 
 html {
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
-  text-size-adjust: 100%;
 }
 
 body {
@@ -27,7 +26,6 @@ h4 {
   font-weight: 700;
   line-height: 1.35;
   letter-spacing: -0.015em;
-  color: var(--text);
 }
 
 h1 {
@@ -39,19 +37,11 @@ h2 {
 h3 {
   font-size: 1.05rem;
 }
-h4 {
-  font-size: 0.95rem;
-}
-
-p {
-  line-height: 1.8;
-}
 
 /* ─── فوکوس ─── */
 :focus {
   outline: none;
 }
-
 :focus-visible {
   outline: 3px solid var(--primary);
   outline-offset: 3px;
@@ -85,12 +75,11 @@ p {
   box-shadow: var(--shadow-md);
   transition: top var(--t-base);
 }
-
 .skip-link:focus {
   top: 20px;
 }
 
-/* ─── سرتیتر بخش‌ها ─── */
+/* ─── سرتیتر بخش ─── */
 .section-head {
   display: flex;
   align-items: center;
@@ -131,7 +120,6 @@ p {
     background var(--t-fast),
     gap var(--t-fast);
 }
-
 .section-head__link:hover {
   color: var(--primary-dark);
   background: var(--primary-soft);
@@ -151,17 +139,4 @@ section[id]:target {
   outline: 3px dashed var(--primary);
   outline-offset: 16px;
   border-radius: var(--r-md);
-  animation: target-pulse 1.6s var(--ease-out) 1;
-}
-
-@keyframes target-pulse {
-  0% {
-    outline-color: transparent;
-  }
-  50% {
-    outline-color: var(--primary);
-  }
-  100% {
-    outline-color: var(--primary);
-  }
 }
