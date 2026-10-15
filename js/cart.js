@@ -125,9 +125,9 @@ export function decreaseQuantity(id) {
   }
 }
 
-// ═══════════════════════════════════════════════════
+
 // محاسبات
-// ═══════════════════════════════════════════════════
+
 export function getCartTotal() {
   return getCart().reduce((sum, item) => {
     const price = safeInt(item.price, 0);
@@ -144,9 +144,8 @@ export function clearCart() {
   saveCart([]);
 }
 
-// ═══════════════════════════════════════════════════
-// به‌روزرسانی UI
-// ═══════════════════════════════════════════════════
+
+
 function updateCartUI() {
   const count = getCartCount();
   const badge = document.getElementById("cart-count");
@@ -159,9 +158,6 @@ function updateCartUI() {
   renderCartModal();
 }
 
-// ═══════════════════════════════════════════════════
-// رندر مودال
-// ═══════════════════════════════════════════════════
 function renderCartModal() {
   const body = document.getElementById("cart-body");
   const footer = document.getElementById("cart-footer");
@@ -282,9 +278,6 @@ function renderCartModal() {
   footer.append(totalBox, checkoutBtn);
 }
 
-// ═══════════════════════════════════════════════════
-// Modal open/close
-// ═══════════════════════════════════════════════════
 export function openModal(id) {
   const modal = document.getElementById(id);
   if (!modal) {
@@ -373,9 +366,7 @@ if (document.readyState === "loading") {
   updateCartUI();
 }
 
-// ═══════════════════════════════════════════════════
-// Stubs — این‌ها فقط برای سازگاری با main.js قدیمی
-// ═══════════════════════════════════════════════════
+
 export function initCart() {
   console.log("✅ initCart() — no-op (auto-bound)");
 }

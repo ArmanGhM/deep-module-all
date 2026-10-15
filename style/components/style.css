@@ -18,9 +18,7 @@
   box-shadow: 0 4px 12px rgba(75, 85, 99, 0.3);
 }
 
-/* ═══════════════════════════════════
-   PRODUCT CARD — کارت محصول
-   ═══════════════════════════════════ */
+
 .product-card {
   position: relative;
   flex: 0 0 220px;
@@ -216,9 +214,7 @@
   max-width: 100%;
 }
 
-/* ═══════════════════════════════════
-   CAROUSEL — کاروسل
-   ═══════════════════════════════════ */
+
 .carousel {
   overflow-x: auto;
   overflow-y: hidden;
@@ -254,9 +250,7 @@
   background: #8bcc93;
 }
 
-/* ═══════════════════════════════════
-   BANNER — بنر تبلیغاتی
-   ═══════════════════════════════════ */
+
 
 .banner {
   border: 2px solid rgba(0, 255, 149, 0.201);
@@ -368,9 +362,7 @@
   opacity: 1;
 }
 
-/* ═══════════════════════════════════════════════════
-   RESPONSIVE — ۳ سطح ساده
-   ═══════════════════════════════════════════════════ */
+
 
 /* ─── سطح ۱: تبلت (۱۰۲۴px) ─── */
 @media (max-width: 1024px) {
@@ -627,9 +619,7 @@
   font-size: 90px;
   text-align: center;
 }
-/* ═══════════════════════════════════════════════════
-   Products Section — گرید محصولات
-   ═══════════════════════════════════════════════════ */
+
 
 .products-section {
   max-width: 1280px;
@@ -703,9 +693,7 @@
     gap: 6px;
   }
 }
-/* ═══════════════════════════════════════════════════
-   Products Section Actions
-   ═══════════════════════════════════════════════════ */
+
 .products-section__actions {
   display: flex;
   align-items: center;
@@ -783,9 +771,7 @@
   }
 }
 
-/* ═══════════════════════════════════════════════════
-   Filter Modal
-   ═══════════════════════════════════════════════════ */
+
 .modal__content--filter {
   max-width: 540px;
 }
@@ -914,9 +900,7 @@
   color: var(--red-600);
 }
 
-/* ═══════════════════════════════════════════════════
-   حالت خالی فیلتر
-   ═══════════════════════════════════════════════════ */
+
 .products-empty {
   grid-column: 1 / -1;
   display: flex;
@@ -961,9 +945,7 @@
   }
 }
 
-/* ═══════════════════════════════════════════════════
-   Responsive
-   ═══════════════════════════════════════════════════ */
+
 @media (max-width: 768px) {
   .products-section__head {
     flex-direction: column;
@@ -993,9 +975,7 @@
   }
 }
 
-/* ═══════════════════════════════════════════════════
-   Dark Mode
-   ═══════════════════════════════════════════════════ */
+
 html.dark-theme .filter-btn {
   background: #1a2319;
   border-color: #252e26;
@@ -1059,9 +1039,7 @@ html.dark-theme .products-empty__text {
 html.dark-theme .products-empty__hint {
   color: #8a968a;
 }
-/* ═══════════════════════════════════════════════════
-   Modal — پایه
-   ═══════════════════════════════════════════════════ */
+
 .modal {
   position: fixed;
   inset: 0;
@@ -1264,9 +1242,7 @@ html.dark-theme .modal__footer {
 html.dark-theme .hero-card__art svg {
   filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.5)) brightness(0.92);
 }
-/* ═══════════════════════════════════════════════════
-   Categories Grid
-   ═══════════════════════════════════════════════════ */
+
 .categories__grid {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
@@ -1418,9 +1394,7 @@ html.dark-theme .hero-card__art svg {
   transform: translateY(0);
 }
 
-/* ═══════════════════════════════════════════════════
-   Responsive
-   ═══════════════════════════════════════════════════ */
+
 
 @media (max-width: 1200px) {
   .categories__grid {
@@ -1474,9 +1448,6 @@ html.dark-theme .hero-card__art svg {
   }
 }
 
-/* ═══════════════════════════════════════════════════
-   Dark Mode
-   ═══════════════════════════════════════════════════ */
 html.dark-theme .category-card {
   background: #1a2319;
   border-color: #252e26;
@@ -1502,9 +1473,7 @@ html.dark-theme .category-card__arrow {
   color: #a5d6a7;
 }
 
-/* ═══════════════════════════════════════════════════
-   Reduced Motion
-   ═══════════════════════════════════════════════════ */
+
 @media (prefers-reduced-motion: reduce) {
   .categories__grid > li,
   .category-card,

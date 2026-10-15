@@ -25,7 +25,6 @@ const SVG_MOON = `
   <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
 </svg>`;
 
-// تبدیل رشته SVG به عنصر DOM بدون innerHTML
 function createSvgElement(svgString) {
   const parser = new DOMParser();
   const doc = parser.parseFromString(svgString.trim(), "image/svg+xml");

@@ -1,7 +1,4 @@
 
-// ═══════════════════════════════════════════════════
-// product-detail.js — مودال جزئیات محصول
-// ═══════════════════════════════════════════════════
 import { escapeHTML, formatPrice } from "./utils.js";
 import { addToCart, openModal } from "./cart.js";
 

@@ -1,3 +1,4 @@
+
 import {
   escapeHTML,
   formatPrice,
@@ -6,8 +7,16 @@ import {
   isValidCategory,
 } from "./utils.js";
 import { addToCart, initCart } from "./cart.js";
-
-const API = "../../../api";
+import { api, ApiError, watchConnectivity } from "./GetItemItemGet.js";
+import {
+  renderError,
+  renderEmpty,
+  renderSkeletonProducts,
+  renderSkeletonCategories,
+  showOfflineBanner,
+  hideOfflineBanner,
+  showRetryToast,
+} from "./states.js";
 
 const filterState = {
   categoryId: "all",
@@ -16,11 +25,13 @@ const filterState = {
   sort: "default",
 };
 
-// داده‌های سراسری (بعد از fetch پر می‌شن)
 let allProductsData = [];
 let allOffersData = [];
 let allStockItems = {};
 let allCategoriesData = [];
+
+let lastLoadError = null;
+let isLoading = false;
 
 function productCardHTML(product, offer = null, quantity = null) {
   if (!isValidProduct(product)) return "";
@@ -66,6 +77,7 @@ function productCardHTML(product, offer = null, quantity = null) {
   `;
 }
 
+
 function attachProductEvents(container, products) {
   if (!container || !Array.isArray(products)) return;
 
@@ -97,6 +109,7 @@ function renderFilteredProducts() {
   const track = document.getElementById("all-track");
   const countEl = document.getElementById("all-count");
   if (!track) return;
+  if (allProductsData.length === 0) return;
 
   let result = [...allProductsData];
 
@@ -174,6 +187,7 @@ function renderFilteredProducts() {
   }
 }
 
+
 function setupFilterModal() {
   const filterBtn = document.getElementById("filter-btn");
   const filterModal = document.querySelector("#filter-modal");
@@ -206,25 +220,22 @@ function setupFilterModal() {
   }
 
   // باز کردن مودال
-  filterBtn.addEventListener("click", () => {
+  filterBtn?.addEventListener("click", () => {
     filterModal.classList.add("modal--open");
-    console.log("open");
     document.body.style.overflow = "hidden";
   });
 
-  // ═══ کلیک روی چیپ‌ها (اصلاح‌شده) ═══
+  // کلیک روی چیپ‌ها
   filterModal.addEventListener("click", (e) => {
     const chip = e.target.closest(".filter-chip");
     if (!chip) return;
 
-    // ریست چیپ‌های هم‌گروه
     const box = chip.parentElement;
     box.querySelectorAll(".filter-chip").forEach((c) => {
       c.classList.remove("filter-chip--active");
     });
     chip.classList.add("filter-chip--active");
 
-    // تشخیص گروه از data attribute
     if (chip.dataset.category !== undefined) {
       filterState.categoryId = chip.dataset.category;
     } else if (chip.dataset.stock !== undefined) {
@@ -234,18 +245,16 @@ function setupFilterModal() {
     } else if (chip.dataset.sort !== undefined) {
       filterState.sort = chip.dataset.sort;
     }
-
-    console.log("فیلتر تغییر کرد:", filterState);
   });
 
-  // ═══ اعمال فیلتر ═══
+  // اعمال فیلتر
   applyBtn?.addEventListener("click", () => {
     renderFilteredProducts();
     filterModal.classList.remove("modal--open");
     document.body.style.overflow = "";
   });
 
-  // ═══ پاک کردن ═══
+  // پاک کردن
   resetBtn?.addEventListener("click", () => {
     filterState.categoryId = "all";
     filterState.stock = "all";
@@ -258,11 +267,9 @@ function setupFilterModal() {
         c.classList.toggle("filter-chip--active", i === 0);
       });
     });
-
-    console.log("فیلتر پاک شد");
   });
 
-  // ═══ بستن با ✕ یا overlay ═══
+  // بستن با ✕ یا overlay
   filterModal.querySelectorAll("[data-close]").forEach((el) => {
     el.addEventListener("click", () => {
       filterModal.classList.remove("modal--open");
@@ -270,90 +277,21 @@ function setupFilterModal() {
     });
   });
 
-  // ═══ ESC ═══
+  // ESC
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape" && filterModal.classList.contains("modal--open")) {
       filterModal.classList.remove("modal--open");
       document.body.style.overflow = "";
     }
   });
-
-  console.log("✅ setupFilterModal اجرا شد");
 }
 
-const itemApi = await (async () => {
-  try {
-    const [products, categories, shop, home, offers, stock] = await Promise.all(
-      [
-        fetch(`${API}/products.json`).then((r) => {
-          if (!r.ok) throw new Error(`products: ${r.status}`);
-          return r.json();
-        }),
-        fetch(`${API}/categories.json`).then((r) => {
-          if (!r.ok) throw new Error(`categories: ${r.status}`);
-          return r.json();
-        }),
-        fetch(`${API}/shop.json`).then((r) => {
-          if (!r.ok) throw new Error(`shop: ${r.status}`);
-          return r.json();
-        }),
-        fetch(`${API}/home.json`).then((r) => {
-          if (!r.ok) throw new Error(`home: ${r.status}`);
-          return r.json();
-        }),
-        fetch(`${API}/offers.json`).then((r) => {
-          if (!r.ok) throw new Error(`offers: ${r.status}`);
-          return r.json();
-        }),
-        fetch(`${API}/stock.json`).then((r) => {
-          if (!r.ok) throw new Error(`stock: ${r.status}`);
-          return r.json();
-        }),
-      ],
-    );
 
-    const validProducts = Array.isArray(products)
-      ? products.filter(isValidProduct)
-      : [];
-
-    const validCategories = Array.isArray(categories)
-      ? categories.filter(isValidCategory)
-      : [];
-
-    const validOffers = Array.isArray(offers)
-      ? offers.filter(
-          (o) =>
-            o &&
-            Number.isInteger(o.productId) &&
-            o.productId > 0 &&
-            Number.isFinite(o.percent) &&
-            o.percent > 0 &&
-            o.percent < 100,
-        )
-      : [];
-
-    return {
-      products: validProducts,
-      categories: validCategories,
-      shop: shop && typeof shop === "object" ? shop : {},
-      home: home && typeof home === "object" ? home : {},
-      offers: validOffers,
-      stock: stock && typeof stock === "object" ? stock : { items: {} },
-    };
-  } catch (err) {
-    console.error("خطا در لود داده‌ها:", err);
-    return null;
-  }
-})();
-
-if (!itemApi) {
-  console.error("داده‌ها لود نشدن");
-} else {
-  const { products, categories, shop, home, offers, stock } = itemApi;
+function renderAll({ products, categories, shop, home, offers, stock }) {
   const stockItems =
     stock?.items && typeof stock.items === "object" ? stock.items : {};
 
-  // ذخیره در متغیرهای سراسری برای فیلتر
+  // ذخیره در متغیرهای سراسری
   allProductsData = products;
   allOffersData = offers;
   allStockItems = stockItems;
@@ -425,15 +363,6 @@ if (!itemApi) {
       heroText.textContent = home.hero.text.slice(0, 300);
     }
 
-    const heroArt = document.querySelector(
-      ".hero-card--primary .hero-card__art img",
-    );
-    if (heroArt && home.hero.emoji) {
-      const emoji = String(home.hero.emoji).slice(0, 8);
-      heroArt.src = `https://www.themealdb.com/images/ingredients/${encodeURIComponent(emoji)}.png`;
-      heroArt.alt = "";
-    }
-
     const heroBtn = document.querySelector(
       ".hero-card--primary .hero-card__btn",
     );
@@ -461,14 +390,6 @@ if (!itemApi) {
       sideText.textContent = String(home.side.text).slice(0, 200);
     }
 
-    const sideArt = document.querySelector(
-      ".hero-card--secondary .hero-card__art img",
-    );
-    if (sideArt && home.side.emoji) {
-      const emoji = String(home.side.emoji).slice(0, 8);
-      sideArt.src = `https://www.themealdb.com/images/ingredients/${encodeURIComponent(emoji)}.png`;
-    }
-
     const sideBtn = document.querySelector(
       ".hero-card--secondary .hero-card__btn",
     );
@@ -483,106 +404,129 @@ if (!itemApi) {
 
   // ═══ ۵. دسته‌بندی‌ها ═══
   const categoriesGrid = document.getElementById("categories-grid");
-  if (categoriesGrid && categories.length) {
-    categoriesGrid.innerHTML = categories
-      .map((cat, index) => {
-        const color = /^#[0-9a-fA-F]{3,8}$/.test(cat.color || "")
-          ? cat.color
-          : "#f0f9f1";
-        return `
-        <li style="--i:${index}">
-          <a href="#cat-${cat.id}" class="category-card">
-            <span class="category-card__glow" style="--c:${color}"></span>
-            <span class="category-card__icon" style="background:${color}">
-              ${escapeHTML(cat.emoji)}
-            </span>
-            <span class="category-card__title">${escapeHTML(cat.name)}</span>
-            <span class="category-card__arrow" aria-hidden="true">
-              <svg viewBox="0 0 24 24" width="14" height="14">
-                <path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </span>
-          </a>
-        </li>
-      `;
-      })
-      .join("");
+  if (categoriesGrid) {
+    if (categories.length === 0) {
+      renderEmpty(categoriesGrid, {
+        icon: "📂",
+        title: "دسته‌بندی‌ای موجود نیست",
+        text: "به‌زودی دسته‌بندی‌های جدید اضافه می‌شود.",
+      });
+    } else {
+      categoriesGrid.innerHTML = categories
+        .map((cat, index) => {
+          const color = /^#[0-9a-fA-F]{3,8}$/.test(cat.color || "")
+            ? cat.color
+            : "#f0f9f1";
+          return `
+            <li style="--i:${index}">
+              <a href="#cat-${cat.id}" class="category-card">
+                <span class="category-card__glow" style="--c:${color}"></span>
+                <span class="category-card__icon" style="background:${color}">
+                  ${escapeHTML(cat.emoji)}
+                </span>
+                <span class="category-card__title">${escapeHTML(cat.name)}</span>
+                <span class="category-card__arrow" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="14" height="14">
+                    <path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </span>
+              </a>
+            </li>
+          `;
+        })
+        .join("");
+    }
   }
 
   // ═══ ۶. پیشنهاد ویژه ═══
   const specialTrack = document.getElementById("special-track");
-  if (specialTrack && offers.length) {
-    specialTrack.innerHTML = offers
-      .map((offer) => {
-        const product = products.find((p) => p.id === offer.productId);
-        if (!product) return "";
-        return productCardHTML(product, offer, stockItems[product.id]);
-      })
-      .join("");
+  if (specialTrack) {
+    if (offers.length === 0) {
+      renderEmpty(specialTrack, {
+        icon: "🔥",
+        title: "پیشنهاد ویژه‌ای موجود نیست",
+        text: "به‌زودی پیشنهادهای جدید اضافه می‌شود.",
+      });
+    } else {
+      specialTrack.innerHTML = offers
+        .map((offer) => {
+          const product = products.find((p) => p.id === offer.productId);
+          if (!product) return "";
+          return productCardHTML(product, offer, stockItems[product.id]);
+        })
+        .join("");
 
-    attachProductEvents(specialTrack, products);
+      attachProductEvents(specialTrack, products);
+    }
   }
 
   // ═══ ۷. بنرها ═══
   const bannersWrapper = document.getElementById("banners-wrapper");
-  if (bannersWrapper && Array.isArray(home?.promos)) {
-    bannersWrapper.innerHTML = home.promos
-      .slice(0, 10)
-      .map((promo) => {
-        if (!promo || typeof promo !== "object") return "";
-
-        return `
-          <a href="${safeHref(promo.href)}" class="banner">
-            <span class="banner__icon" aria-hidden="true">${escapeHTML(promo.emoji)}</span>
-            <div class="banner__content">
-              <strong>${escapeHTML(promo.text)}</strong>
-            </div>
-            <span class="banner__arrow" aria-hidden="true">←</span>
-          </a>
-        `;
-      })
-      .join("");
+  if (bannersWrapper) {
+    if (Array.isArray(home?.promos) && home.promos.length > 0) {
+      bannersWrapper.innerHTML = home.promos
+        .slice(0, 10)
+        .map((promo) => {
+          if (!promo || typeof promo !== "object") return "";
+          return `
+            <a href="${safeHref(promo.href)}" class="banner">
+              <span class="banner__icon" aria-hidden="true">${escapeHTML(promo.emoji)}</span>
+              <div class="banner__content">
+                <strong>${escapeHTML(promo.text)}</strong>
+              </div>
+              <span class="banner__arrow" aria-hidden="true">←</span>
+            </a>
+          `;
+        })
+        .join("");
+    } else {
+      bannersWrapper.innerHTML = "";
+    }
   }
 
   // ═══ ۸. کاروسل هر دسته ═══
   const categorySections = document.getElementById("category-sections");
-  if (categorySections && categories.length) {
-    categorySections.innerHTML = categories
-      .map((cat) => {
-        const catProducts = products.filter((p) => p.categoryId === cat.id);
-        if (catProducts.length === 0) return "";
+  if (categorySections) {
+    if (categories.length === 0 || products.length === 0) {
+      categorySections.innerHTML = "";
+    } else {
+      categorySections.innerHTML = categories
+        .map((cat) => {
+          const catProducts = products.filter((p) => p.categoryId === cat.id);
+          if (catProducts.length === 0) return "";
 
-        const cardsHTML = catProducts
-          .map((p) => productCardHTML(p, null, stockItems[p.id]))
-          .join("");
+          const cardsHTML = catProducts
+            .map((p) => productCardHTML(p, null, stockItems[p.id]))
+            .join("");
 
-        return `
-          <section id="cat-${cat.id}" class="carousel-section">
-            <div class="carousel-section__head">
-              <h2 class="section-head__title">
-                <span aria-hidden="true">${escapeHTML(cat.emoji)}</span>
-                ${escapeHTML(cat.name)}
-              </h2>
-              <span class="section-head__count">${catProducts.length.toLocaleString("fa-IR")} کالا</span>
-            </div>
-            <div class="carousel" role="region" aria-label="کاروسل ${escapeHTML(cat.name)}" tabindex="0">
-              <ul class="carousel__track">${cardsHTML}</ul>
-            </div>
-          </section>
-        `;
-      })
-      .join("");
+          return `
+            <section id="cat-${cat.id}" class="carousel-section">
+              <div class="carousel-section__head">
+                <h2 class="section-head__title">
+                  <span aria-hidden="true">${escapeHTML(cat.emoji)}</span>
+                  ${escapeHTML(cat.name)}
+                </h2>
+                <span class="section-head__count">${catProducts.length.toLocaleString("fa-IR")} کالا</span>
+              </div>
+              <div class="carousel" role="region" aria-label="کاروسل ${escapeHTML(cat.name)}" tabindex="0">
+                <ul class="carousel__track">${cardsHTML}</ul>
+              </div>
+            </section>
+          `;
+        })
+        .join("");
 
-    categorySections.querySelectorAll(".carousel__track").forEach((track) => {
-      attachProductEvents(track, products);
-    });
+      categorySections.querySelectorAll(".carousel__track").forEach((track) => {
+        attachProductEvents(track, products);
+      });
+    }
   }
 
-  //  ۹. تمام محصولات با فیلتر
+  // ═══ ۹. تمام محصولات با فیلتر ═══
   setupFilterModal();
   renderFilteredProducts();
 
-  // ۱۰. فوتر
+  // ═══ ۱۰. فوتر ═══
   if (shop && typeof shop === "object") {
     const footerName = document.getElementById("footer-name");
     if (footerName && shop.name) {
@@ -646,7 +590,195 @@ if (!itemApi) {
       footerCopy.textContent = String(shop.copyright).slice(0, 200);
     }
   }
+}
 
-  // ۱۱. سبد خرید
+
+function showErrorState(error) {
+  const type = error?.type || "unknown";
+  const msg = error?.userMessage || "ارتباط با سرور برقرار نشد.";
+  const retry = () => loadAndRender();
+
+  const topbar = document.getElementById("topbar-text");
+  if (topbar) {
+    const map = {
+      offline: "📡 اتصال اینترنت قطع است — برخی اطلاعات در دسترس نیست",
+      timeout: "⏱️ سرور پاسخ نداد — دوباره تلاش کنید",
+      network: "🌐 خطا در ارتباط با سرور",
+      http: `🚫 خطای سرور ${error?.status || ""}`.trim(),
+      parse: "🧩 پاسخ سرور نامعتبر بود",
+      unknown: "⚠️ اختلال موقت در سرویس",
+    };
+    topbar.textContent = map[type] || map.unknown;
+  }
+
+  renderError(document.getElementById("categories-grid"), {
+    title: "دسته‌بندی‌ها در دسترس نیست",
+    text: msg,
+    onRetry: retry,
+    errorType: type,
+  });
+
+  renderError(document.getElementById("special-track"), {
+    title: "پیشنهاد ویژه در دسترس نیست",
+    text: msg,
+    onRetry: retry,
+    errorType: type,
+  });
+
+  const banners = document.getElementById("banners-wrapper");
+  if (banners) {
+    renderError(banners, {
+      title: "بنرها در دسترس نیست",
+      text: "اطلاعات تبلیغاتی بارگذاری نشد.",
+      onRetry: retry,
+      errorType: type,
+    });
+  }
+
+  renderError(document.getElementById("all-track"), {
+    title: "خطا در دریافت محصولات",
+    text: msg,
+    onRetry: retry,
+    errorType: type,
+  });
+
+  const catSections = document.getElementById("category-sections");
+  if (catSections) catSections.innerHTML = "";
+
+  const footerHelp = document.getElementById("footer-help");
+  if (footerHelp) {
+    footerHelp.innerHTML =
+      '<li style="color:#94a3b8;font-size:.82rem">اطلاعات در دسترس نیست</li>';
+  }
+}
+
+function showEmptyState() {
+  renderEmpty(document.getElementById("categories-grid"), {
+    icon: "📂",
+    title: "هنوز دسته‌بندی‌ای اضافه نشده",
+    text: "به‌زودی دسته‌بندی‌های جدید اضافه می‌شود.",
+  });
+
+  renderEmpty(document.getElementById("special-track"), {
+    icon: "🔥",
+    title: "پیشنهاد ویژه‌ای موجود نیست",
+    text: "به‌زودی پیشنهادهای ویژه اضافه می‌شود.",
+  });
+
+  renderEmpty(document.getElementById("all-track"), {
+    icon: "📦",
+    title: "محصولی برای نمایش نیست",
+    text: "به‌زودی محصولات جدید اضافه می‌شود.",
+  });
+
+  const banners = document.getElementById("banners-wrapper");
+  if (banners) banners.innerHTML = "";
+
+  const catSections = document.getElementById("category-sections");
+  if (catSections) catSections.innerHTML = "";
+}
+
+
+
+async function loadAndRender() {
+  if (isLoading) return;
+  isLoading = true;
+  lastLoadError = null;
+
+  // ─── اسکلتون‌ها ───
+  renderSkeletonCategories(document.getElementById("categories-grid"), 7);
+  renderSkeletonProducts(document.getElementById("special-track"), 4);
+  renderSkeletonProducts(document.getElementById("all-track"), 8);
+
+  const retryOptions = {
+    onRetry: ({ attempt, waitMs }) =>
+      showRetryToast({ attempt, total: 3, waitMs }),
+  };
+
+  let data = null;
+
+  try {
+    const [products, categories, shop, home, offers, stock] = await Promise.all(
+      [
+        api.products(retryOptions),
+        api.categories(retryOptions),
+        api.shop(retryOptions),
+        api.home(retryOptions),
+        api.offers(retryOptions),
+        api.stock(retryOptions),
+      ],
+    );
+
+    const validProducts = Array.isArray(products)
+      ? products.filter(isValidProduct)
+      : [];
+
+    const validCategories = Array.isArray(categories)
+      ? categories.filter(isValidCategory)
+      : [];
+
+    const validOffers = Array.isArray(offers)
+      ? offers.filter(
+          (o) =>
+            o &&
+            Number.isInteger(o.productId) &&
+            o.productId > 0 &&
+            Number.isFinite(o.percent) &&
+            o.percent > 0 &&
+            o.percent < 100,
+        )
+      : [];
+
+    data = {
+      products: validProducts,
+      categories: validCategories,
+      shop: shop && typeof shop === "object" ? shop : {},
+      home: home && typeof home === "object" ? home : {},
+      offers: validOffers,
+      stock: stock && typeof stock === "object" ? stock : { items: {} },
+    };
+  } catch (err) {
+    console.error("❌ خطا در لود داده‌ها:", err);
+    lastLoadError = err instanceof ApiError ? err : new ApiError("خطای نامشخص");
+  }
+
+  isLoading = false;
+
+  // ─── خطا ───
+  if (!data) {
+    showErrorState(lastLoadError);
+    initCart();
+    return;
+  }
+
+  // ─── داده خالی ───
+  if (!data.products.length && !data.categories.length) {
+    showEmptyState();
+    initCart();
+    return;
+  }
+
+  // ─── موفق ───
+  renderAll(data);
   initCart();
 }
+
+
+watchConnectivity({
+  onOffline: () => {
+    showOfflineBanner();
+  },
+  onOnline: () => {
+    hideOfflineBanner();
+    // اگه قبلاً خطا داشتیم یا داده‌ای لود نشده بود، دوباره امتحان کن
+    if (lastLoadError || allProductsData.length === 0) {
+      loadAndRender();
+    }
+  },
+});
+
+// اگه همین الان آفلاین بودیم
+if (!navigator.onLine) showOfflineBanner();
+
+
+loadAndRender();
